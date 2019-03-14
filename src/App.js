@@ -1,28 +1,83 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+const initialXY = {
+  x: null,
+  y: null
+};
+
+const initialProfile = {
+  url: null,
+  follower: null,
+  public_repos: null
+};
+
+export default function App() {
+  const [count, setCount] = useState(1);
+  const [update, setUpdate] = useState(false);
+  const [xy, setXY] = useState(initialXY);
+
+  const [profile, setProfile] = useState(initialProfile);
+  const [loading, setLoading] = useState(false);
+
+  const handleMouseMove = event => {
+    setXY({
+      x: event.pageX,
+      y: event.pageY
+    });
+  };
+
+  const getProfile = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://api.github.com/users/techsithgit");
+      const json = await response.json();
+
+      setLoading(false);
+      if (json && json.url) {
+        setProfile({
+          url: json.url,
+          followers: json.followers,
+          public_repos: json.public_repos
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    document.title = count;
+    window.addEventListener("mousemove", handleMouseMove);
+
+    getProfile();
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [update]);
+
+  return (
+    <div>
+      <div>{count}</div>
+      <button onClick={() => setCount(previousCount => previousCount + 1)}>
+        Up
+      </button>
+      <div>{update}</div>
+      <button onClick={() => setUpdate(previouseUpdate => !previouseUpdate)}>
+        Update
+      </button>
+
+      <div>{`x:${xy.x}, y:${xy.y}`}</div>
+      <div>
+        {loading ? (
+          <div>Loading....</div>
+        ) : (
+          <ul>
+            <li>url: {profile.url}</li>
+            <li>follower: {profile.followers}</li>
+            <li>Repo:{profile.public_repos}</li>
+          </ul>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 }
-
-export default App;
