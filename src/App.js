@@ -55,6 +55,10 @@ export default function App() {
     };
   }, [update]);
 
+  useEffect(() => {
+      getProfile();
+  },[]);
+
   return (
     <div>
       <div>{count}</div>
